@@ -1,4 +1,5 @@
+mcp[cli]>=1.9,<2
+scholarly>=1.7.11
+bibtexparser<2
 requests
-bs4 
-mcp 
-scholarly
+beautifulsoup4

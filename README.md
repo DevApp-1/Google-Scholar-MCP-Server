@@ -93,7 +93,8 @@ print(result)
 result = await mcp.use_tool("search_google_scholar_advanced", {
     "query": "machine learning",
     "author": "Hinton",
-    "year_range": [2020, 2023],
+    "year_start": 2020,
+    "year_end": 2023,
     "num_results": 3
 })
 print(result)
@@ -121,7 +122,7 @@ Add this configuration to your `claude_desktop_config.json`:
   "mcpServers": {
     "google-scholar": {
       "command": "python",
-      "args": ["-m", "google_scholar_mcp_server"]
+      "args": ["/ABSOLUTE/PATH/TO/Google-Scholar-MCP-Server/google_scholar_server.py"]
       }
   }
 }
@@ -152,7 +153,7 @@ Using with Cline
       "command": "bash",
       "args": [
         "-c",
-        "source /home/YOUR/PATH/.venv/bin/activate && python /home/YOUR/PATH/google_scholar_mcp_server.py"
+        "source /home/YOUR/PATH/.venv/bin/activate && python /home/YOUR/PATH/google_scholar_server.py"
       ],
       "env": {},
       "disabled": false,
@@ -162,6 +163,33 @@ Using with Cline
 }
 ```
 
+
+## 🌐 Use as a claude.ai connector (remote server)
+
+claude.ai custom connectors need a public HTTPS URL, so run the server with the
+streamable HTTP transport and host it (Render, Fly.io, Railway, Cloud Run, a VPS...).
+
+```bash
+python google_scholar_server.py --transport streamable-http
+```
+
+Or with Docker (the image defaults to HTTP mode on port 8000):
+
+```bash
+docker build -t google-scholar-mcp . && docker run -p 8000:8000 -e MCP_SECRET=change-me google-scholar-mcp
+```
+
+On Render, **New → Blueprint** with this repo uses `render.yaml` and generates `MCP_SECRET` for you.
+
+Then open https://claude.ai/customize/connectors → **Add custom connector** and use
+`https://YOUR-HOST/mcp/<MCP_SECRET>` (or `/mcp` if `MCP_SECRET` is unset). Start a new chat to load it.
+
+| Variable | Purpose |
+|---|---|
+| `MCP_TRANSPORT` | `stdio` (default) or `streamable-http` |
+| `HOST` / `PORT` | Listen address (default `0.0.0.0:8000`) |
+| `MCP_SECRET` | Serve the endpoint at `/mcp/<secret>` so only you can use it |
+| `PROXY_URL` | `http://user:pass@host:port` proxy; Google Scholar often CAPTCHA-blocks cloud IPs |
 
 ## 🛠 MCP Tools
 
@@ -184,7 +212,8 @@ Perform an advanced search for articles on Google Scholar.
 **Parameters:**
 - `query` (str): General search query
 - `author` (str, optional): Author name
-- `year_range` (tuple, optional): Tuple containing (start_year, end_year)
+- `year_start` (int, optional): Earliest publication year
+- `year_end` (int, optional): Latest publication year
 - `num_results` (int, optional): Number of results to return (default: 5)
 
 **Returns:** List of dictionaries containing article information

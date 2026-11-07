@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: google-scholar-mcp
+    runtime: docker
+    plan: free
+    envVars:
+      - key: MCP_SECRET
+        generateValue: true
+      - key: PROXY_URL
+        sync: false
